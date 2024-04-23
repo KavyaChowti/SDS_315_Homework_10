@@ -1,0 +1,192 @@
+---
+title: "Homework 10"
+author: "Kavya Chowti - kc45736"
+date: "2024-04-23"
+output: html_document
+---
+
+```{r global options,  echo=FALSE}
+knitr::opts_chunk$set(fig.height=4, fig.width=7, warning=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+```
+
+[Hyperlink to Github Repository]()
+
+***
+
+# **Question 1**
+
+```{r echo=FALSE, message=FALSE}
+
+redline = read.csv("redlining.csv")
+attach(redline)
+
+```
+
+```{r echo=FALSE, message=FALSE}
+
+# load required packages
+library(moderndive)
+library(knitr)
+
+# Fit linear regression model adjusting for fire, age, and income
+redline.lm = lm(policies ~ minority + fire + age + income, data = redline)
+
+# Summary of the model
+regression_table <- get_regression_table(redline.lm)
+
+# Capitalize column names
+names(regression_table) <- c("Term", "Estimate", "Std. Error", "Statistical Significance", "p-value", "Lower CI", "Upper CI")
+
+# Format the regression table using kable
+kable(regression_table)
+
+```
+
+
+#### **Question:** 
+The question we are trying to answer is whether there is an association between the number of FAIR policies (proxy for access to private insurance) and the racial/ethnic composition of ZIP codes in Chicago, while adjusting for variables such as fire incidents, age of housing units, and median family income.
+
+#### **Approach:**
+I used a linear regression model to assess the association between the number of FAIR policies and the racial/ethnic composition of ZIP codes, while controlling for fire incidents, age of housing units, and median family income. This approach allows us to examine the relationship between the dependent variable (number of FAIR policies) and multiple independent variables simultaneously.
+
+#### **Results:**
+The linear regression analysis presented in the table provided quantifies the relationships between the number of FAIR policies and various demographic and environmental factors in Chicago ZIP codes. This analysis offers statistical evidence to assess the impact of minority percentage, fire incidents, housing age, and median family income on access to private home insurance, while adjusting for potential confounding variables.
+
+#### **Conclusion:**
+The results of the linear regression analysis indicate several key findings:
+
+**Minority Percentage:** There is a statistically significant positive association between minority percentage and the number of FAIR policies issued. For every one percentage point increase in the minority population, the number of FAIR policies increases by approximately 0.008 per 100 housing units (p = 0.006).
+
+**Fire Incidents:** Similarly, fire incidents per 100 housing units are positively associated with the number of FAIR policies issued. A one-unit increase in fires results in an increase of approximately 0.022 FAIR policies per 100 housing units (p = 0.018).
+
+**Housing Age and Income:** However, there is no statistically significant association between housing age or median family income and the number of FAIR policies issued. Housing age and income do not have a significant impact on FAIR policy issuance after controlling for other factors.
+
+These findings suggest that minority percentage and fire incidents play significant roles in access to private home insurance in Chicago ZIP codes. Policymakers should consider addressing potential disparities in insurance access based on demographic and environmental factors to ensure equal access to these services.
+
+
+# **Question 2**
+
+```{r echo=FALSE, message=FALSE}
+
+grocery = read.csv("groceries.csv")
+attach(grocery)
+
+```
+
+#### **PART A**
+
+```{r echo=FALSE, message=FALSE}
+
+# load required libraries
+library(dplyr)
+library(ggplot2)
+
+# Calculate average price by store
+average_price <- grocery %>%
+  group_by(Store) %>%
+  summarize(avg_price = mean(Price))
+
+# Plot average price by store
+ggplot(average_price, aes(x = avg_price, y = Store)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  labs(title = "Average Price of Products by Store",
+       x = "Average Price (USD)",
+       y = "Store") + theme_minimal()
+
+
+```
+
+This bar graph illustrates the average prices of grocery products across various stores in Houston, Austin, and Fort Worth. Each bar represents the average price of products sold at a specific store, providing insights into price variations among different grocery retailers in the region.
+
+#### **PART B**
+
+```{r echo=FALSE, message=FALSE}
+
+# Calculate number of stores selling each product
+stores_per_product <- grocery %>%
+  group_by(Product) %>%
+  summarize(num_stores = n_distinct(Store))
+
+# Plot number of stores selling each product
+ggplot(stores_per_product, aes(x = num_stores, y = Product)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  labs(title = "Number of Stores Selling Each Product",
+       x = "Number of Stores",
+       y = "Product") + theme_minimal()
+
+```
+
+This bar graph showcases the distribution of grocery products based on the number of stores selling each product. Each bar represents the count of stores selling a particular product, highlighting the availability and popularity of different grocery items across the sampled stores.
+
+#### **PART C**
+
+```{r echo=FALSE, message=FALSE}
+
+
+# Convert Type variable to factor with levels including Convenience
+grocery$Type <- factor(grocery$Type, levels = c("Grocery", "Convenience ", "High-end Grocery", "Natural", "Small Format"))
+
+# Fit linear regression model for Price versus Product and Type
+grocery.lm <- lm(Price ~ Product + Type, data = grocery)
+grocery_table <- get_regression_table(grocery.lm)
+
+
+# Confidence interval for convenience stores compared to ordinary grocery stores
+convenience_diff <- confint(grocery.lm, "TypeConvenience ", level = 0.95)
+lower_bound <- convenience_diff[1]
+upper_bound <- convenience_diff[2]
+
+#names(grocery_table) <- c("Term", "Estimate", "Std. Error", "Statistical Significance", "p-value", "Lower CI", "Upper CI")
+
+#kable(grocery_table)
+
+
+```
+
+
+Compared with ordinary grocery stores, convenience stores charge between `r round(lower_bound, 2)` and `r round(upper_bound, 2)` dollars more for the same product.
+
+#### **PART D**
+
+```{r echo=FALSE, message=FALSE}
+
+# Fit linear regression model for Price versus Product and Store
+grocery.lm2 <- lm(Price ~ Product + Store, data = grocery)
+grocery_table_2 = get_regression_table(grocery.lm2)
+
+```
+
+The two stores with the lowest prices for the same product are Walmart and Kroger Fresh Fare.
+
+The two stores with the highest prices for the same product are Whole Foods and Wheatsville Food Co-op.
+
+#### **PART E**
+
+The coefficients for Central Market and HEB are -0.573 and -0.646 respectively. Compared to the reference store both sell products at a lower price. When looking exclusively at the coefficients it looks like Central Market sells products at a slightly more expensive price than HEB. In comparison to the reference store both Central Market and HEB offer competitive prices with HEB offering slightly lower prices. However, even if the coefficients for Central Market and HEB are statistically significant that may not necessarily mean that Central Market charges more. A small difference in price may not be practically significant as compared to the differences between other stores, the difference between Central Market and HEB is not drastic.
+
+#### **PART F**
+
+```{r echo=FALSE}
+
+# Define Income10K variable
+grocery <- mutate(grocery, Income10K = Income / 10000)
+
+# Fit linear regression model for Price versus Product and Income10K
+grocery.lm3 <- lm(Price ~ Product + Income10K, data = grocery)
+
+# Based on the coefficient sign, assess if consumers in poorer ZIP codes pay more or less
+income_coefficient <- summary(grocery.lm3)$coefficients["Income10K", "Estimate"]
+
+
+# Calculate the size of the effect of Income10K on Price
+income_std_dev <- sd(grocery$Income10K)
+price_std_dev <- sd(grocery.lm3$residuals)
+
+```
+
+**a)**
+The negative coefficient for income, -0.01408973, suggests that there is an inverse relationship between income and price, indicating that consumers in poorer ZIP codes tend to pay less for the same product on average. This is because as income decreases, prices decrease, and vice versa. Therefore, the coefficient provides evidence that income is a significant factor in determining pricing differences across ZIP codes, with lower-income areas generally experiencing lower prices for the same products.
+
+**b)**
+A one-standard deviation increase in the income of a ZIP code seems to be associated with a -0.01 standard deviation change in the price that consumers in that ZIP code expect to pay for the same product.
+
